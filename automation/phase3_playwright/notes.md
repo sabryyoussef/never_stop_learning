@@ -122,9 +122,9 @@ npx playwright --version    # Version 1.56.1
 
 ---
 
-## 🎥 Video 3: Record and Run First Test
-
-**Video Link:** https://www.youtube.com/watch?v=fN1Cyr7BduU  
+## 🎥 Video 3: 
+ 
+**Video Link:** https://www.youtube.com/watch?v=LTwg0kqdK4I&list=PLhW3qG5bs-L9sJKoT1LC5grGT77sfW0Z8&index=3  
 **Status:** ⬜ Not Watched  
 **Date Watched:** _____
 
