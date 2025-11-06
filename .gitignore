@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Playwright
+test-results/
+playwright-report/
+.playwright/
+playwright/.auth/
+*.webm
+*.png
+trace.zip
+auth.json
+
+# Node
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Test outputs
+*.log
+*.xml
+*.json.report
+
+# OS
+Thumbs.db
+

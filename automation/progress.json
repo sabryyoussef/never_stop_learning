@@ -1,0 +1,401 @@
+{
+  "learning_plan": {
+    "title": "Odoo UI Automation Testing Learning Path",
+    "created_date": "2025-11-06",
+    "last_updated": "2025-11-06",
+    "overall_progress": {
+      "total_phases": 7,
+      "completed_phases": 1,
+      "total_videos": 15,
+      "watched_videos": 4,
+      "completion_percentage": 14
+    }
+  },
+  "phases": [
+    {
+      "phase_id": 1,
+      "phase_name": "Testing Mindset (Foundation)",
+      "status": "completed",
+      "start_date": "2025-11-06",
+      "completion_date": "2025-11-06",
+      "videos": [
+        {
+          "video_id": "phase1_video1",
+          "title": "Every Beginner should know this 5-Step Process before starting Automation Testing",
+          "url": "https://www.youtube.com/watch?v=VDwLyfNJgek",
+          "status": "watched",
+          "watched_date": "2025-11-06",
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        },
+        {
+          "video_id": "phase1_video2",
+          "title": "How to Start Learning Automation for Beginners #AskRaghav",
+          "url": "https://www.youtube.com/watch?v=FDNb-CSCho8",
+          "status": "watched",
+          "watched_date": "2025-11-06",
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        }
+      ],
+      "deliverable": {
+        "title": "Document automation strategy for your Odoo project",
+        "status": "completed",
+        "completion_date": "2025-11-06",
+        "file_path": "phase1_foundation/strategy.md"
+      }
+    },
+    {
+      "phase_id": 2,
+      "phase_name": "API Testing (Odoo Controller Verification)",
+      "status": "not_started",
+      "start_date": null,
+      "completion_date": null,
+      "videos": [
+        {
+          "video_id": "phase2_video1",
+          "title": "POSTMAN Beginner Tutorial 1 – Introduction | What is Postman",
+          "url": "https://www.youtube.com/watch?v=juldrxDrSH0",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        },
+        {
+          "video_id": "phase2_video2",
+          "title": "POSTMAN Beginner Tutorial 3 – Create First API Request",
+          "url": "https://www.youtube.com/watch?v=cR_FqveTewo",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        }
+      ],
+      "deliverable": {
+        "title": "Create Postman collection for Odoo API endpoints",
+        "status": "not_completed",
+        "completion_date": null,
+        "file_path": "phase2_api_testing/odoo_api_collection.json"
+      }
+    },
+    {
+      "phase_id": 3,
+      "phase_name": "Playwright (Primary Tool for Odoo UI Testing)",
+      "status": "in_progress",
+      "start_date": "2025-11-06",
+      "completion_date": null,
+      "videos": [
+        {
+          "video_id": "phase3_video1",
+          "title": "Playwright Beginner Tutorial 1 – What is Playwright",
+          "url": "https://www.youtube.com/watch?v=4_m3HsaNwOE",
+          "status": "watched",
+          "watched_date": "2025-11-06",
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        },
+        {
+          "video_id": "phase3_video2",
+          "title": "Playwright Beginner Tutorial 2 – Install Playwright",
+          "url": "https://www.youtube.com/watch?v=IB2P1FBXjcQ",
+          "status": "watched",
+          "watched_date": "2025-11-06",
+          "duration_minutes": null,
+          "notes": "Successfully installed Playwright v1.56.1 with Node.js v22.21.1. Installed VS Code extension. Ready for Odoo testing.",
+          "rating": null
+        },
+        {
+          "video_id": "phase3_video3",
+          "title": "Playwright Beginner Tutorial 3 – Record and Run your First Test",
+          "url": "https://www.youtube.com/watch?v=fN1Cyr7BduU",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        },
+        {
+          "video_id": "phase3_video4",
+          "title": "Playwright Beginner Tutorial 6 – Locators and Assertions",
+          "url": "https://www.youtube.com/watch?v=JpGsWZ6Tjrs",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        },
+        {
+          "video_id": "phase3_video5",
+          "title": "Playwright Beginner Tutorial 11 – Hooks & Groups",
+          "url": "https://www.youtube.com/watch?v=S3NVJo0ySwE",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        }
+      ],
+      "deliverable": {
+        "title": "Create reusable Playwright test templates for Odoo forms",
+        "status": "not_completed",
+        "completion_date": null,
+        "file_path": "phase3_playwright/tests/"
+      }
+    },
+    {
+      "phase_id": 4,
+      "phase_name": "Cypress (Optional JS-Based Alternative)",
+      "status": "not_started",
+      "start_date": null,
+      "completion_date": null,
+      "videos": [
+        {
+          "video_id": "phase4_video1",
+          "title": "Cypress Complete Beginners Masterclass 1 – Step by Step",
+          "url": "https://www.youtube.com/watch?v=tRI5ruE7yCA",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        }
+      ],
+      "deliverable": {
+        "title": "Compare Cypress vs Playwright for Odoo testing",
+        "status": "not_completed",
+        "completion_date": null,
+        "file_path": "phase4_cypress/comparison.md"
+      }
+    },
+    {
+      "phase_id": 5,
+      "phase_name": "Selenium (Fallback Legacy Tool)",
+      "status": "not_started",
+      "start_date": null,
+      "completion_date": null,
+      "videos": [
+        {
+          "video_id": "phase5_video1",
+          "title": "Selenium 4 Beginner Tutorial 1 – Introduction & Setup",
+          "url": "https://www.youtube.com/watch?v=HjYEjKWSbe8",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        }
+      ],
+      "deliverable": {
+        "title": "Document when to use Selenium vs modern tools",
+        "status": "not_completed",
+        "completion_date": null,
+        "file_path": "phase5_selenium/decision_matrix.md"
+      }
+    },
+    {
+      "phase_id": 6,
+      "phase_name": "Jenkins CI/CD Integration",
+      "status": "not_started",
+      "start_date": null,
+      "completion_date": null,
+      "videos": [
+        {
+          "video_id": "phase6_video1",
+          "title": "Jenkins Beginner Tutorial 1 – Introduction & Getting Started",
+          "url": "https://www.youtube.com/watch?v=6YZvp2GwT0A",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        },
+        {
+          "video_id": "phase6_video2",
+          "title": "Jenkins Beginner Tutorial 2 – Install Jenkins on Windows/Mac/Linux",
+          "url": "https://www.youtube.com/watch?v=FX322RVNGj4",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        },
+        {
+          "video_id": "phase6_video3",
+          "title": "Jenkins Beginner Tutorial 3 – Create First Job | Run Automation Scripts",
+          "url": "https://www.youtube.com/watch?v=7KCS70sCoK0",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        }
+      ],
+      "deliverable": {
+        "title": "Setup Jenkins pipeline for automated Odoo testing",
+        "status": "not_completed",
+        "completion_date": null,
+        "file_path": "phase6_jenkins/Jenkinsfile"
+      }
+    },
+    {
+      "phase_id": 7,
+      "phase_name": "Performance & Load Testing (Optional)",
+      "status": "not_started",
+      "start_date": null,
+      "completion_date": null,
+      "videos": [
+        {
+          "video_id": "phase7_video1",
+          "title": "JMeter Full Course Masterclass | Step by Step for Beginners",
+          "url": "https://www.youtube.com/watch?v=SoW2pBak1_Q",
+          "status": "not_watched",
+          "watched_date": null,
+          "duration_minutes": null,
+          "notes": "",
+          "rating": null
+        }
+      ],
+      "deliverable": {
+        "title": "Create JMeter test plan for Odoo API load testing",
+        "status": "not_completed",
+        "completion_date": null,
+        "file_path": "phase7_performance/jmeter_test_plan.jmx"
+      }
+    }
+  ],
+  "weekly_schedule": [
+    {
+      "week": 1,
+      "focus": "Foundation + API Testing",
+      "tools": ["Postman"],
+      "phases": [1, 2],
+      "status": "in_progress",
+      "start_date": "2025-11-06",
+      "end_date": null,
+      "goals": [
+        "Complete Phase 1 videos ✅",
+        "Complete Phase 2 videos",
+        "Create Postman collection for Odoo endpoints"
+      ]
+    },
+    {
+      "week": 2,
+      "focus": "Playwright Setup",
+      "tools": ["Playwright"],
+      "phases": [3],
+      "status": "in_progress",
+      "start_date": "2025-11-06",
+      "end_date": null,
+      "goals": [
+        "Watch Playwright introduction videos (2/5 ✅)",
+        "Install and configure Playwright ✅",
+        "Create first automated UI test on Odoo form"
+      ]
+    },
+    {
+      "week": 3,
+      "focus": "Advanced Playwright",
+      "tools": ["Playwright"],
+      "phases": [3],
+      "status": "not_started",
+      "start_date": null,
+      "end_date": null,
+      "goals": [
+        "Master locators and assertions",
+        "Implement hooks and groups",
+        "Create modular, reusable UI tests"
+      ]
+    },
+    {
+      "week": 4,
+      "focus": "Cypress Exploration",
+      "tools": ["Cypress"],
+      "phases": [4, 5],
+      "status": "not_started",
+      "start_date": null,
+      "end_date": null,
+      "goals": [
+        "Explore Cypress framework",
+        "Compare Cypress vs Playwright",
+        "Evaluate Selenium as fallback"
+      ]
+    },
+    {
+      "week": 5,
+      "focus": "CI/CD Integration",
+      "tools": ["Jenkins"],
+      "phases": [6],
+      "status": "not_started",
+      "start_date": null,
+      "end_date": null,
+      "goals": [
+        "Install and configure Jenkins",
+        "Create Jenkins pipeline",
+        "Automate test runs per Git commit"
+      ]
+    },
+    {
+      "week": 6,
+      "focus": "Performance Testing",
+      "tools": ["JMeter"],
+      "phases": [7],
+      "status": "not_started",
+      "start_date": null,
+      "end_date": null,
+      "goals": [
+        "Learn JMeter basics",
+        "Create load test plan",
+        "Test Odoo API routes under load"
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "milestone_id": 1,
+      "title": "Complete Foundation Phase",
+      "target_date": "2025-11-06",
+      "status": "completed",
+      "dependencies": ["phase1"]
+    },
+    {
+      "milestone_id": 2,
+      "title": "First Playwright Test Running",
+      "target_date": null,
+      "status": "pending",
+      "dependencies": ["phase3_video1", "phase3_video2", "phase3_video3"]
+    },
+    {
+      "milestone_id": 3,
+      "title": "Complete Test Suite for One Odoo Module",
+      "target_date": null,
+      "status": "pending",
+      "dependencies": ["phase3"]
+    },
+    {
+      "milestone_id": 4,
+      "title": "Jenkins Pipeline Operational",
+      "target_date": null,
+      "status": "pending",
+      "dependencies": ["phase6"]
+    },
+    {
+      "milestone_id": 5,
+      "title": "Complete All Phases",
+      "target_date": null,
+      "status": "pending",
+      "dependencies": ["phase1", "phase2", "phase3", "phase4", "phase5", "phase6", "phase7"]
+    }
+  ],
+  "notes": {
+    "general_notes": [],
+    "blockers": [],
+    "questions": [],
+    "resources": []
+  }
+}
+

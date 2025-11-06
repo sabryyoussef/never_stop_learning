@@ -1,0 +1,258 @@
+/**
+ * Jenkins Pipeline for Odoo Automation Testing
+ * 
+ * This pipeline automates the execution of Playwright tests for Odoo modules.
+ * It runs on every commit to the repository and generates test reports.
+ */
+
+pipeline {
+    agent any
+    
+    environment {
+        // Odoo configuration
+        ODOO_URL = 'http://localhost:8069'
+        ODOO_DB = 'your_database'
+        ODOO_USER = credentials('odoo-admin-user')
+        ODOO_PASSWORD = credentials('odoo-admin-password')
+        
+        // Test configuration
+        TEST_RESULTS_DIR = 'test-results'
+        PLAYWRIGHT_BROWSERS_PATH = "${WORKSPACE}/.playwright"
+    }
+    
+    options {
+        // Keep only last 10 builds
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        
+        // Timeout for entire pipeline
+        timeout(time: 30, unit: 'MINUTES')
+        
+        // Timestamps in console output
+        timestamps()
+    }
+    
+    triggers {
+        // Poll SCM every 5 minutes
+        pollSCM('H/5 * * * *')
+        
+        // Or use GitHub webhook
+        // githubPush()
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code...'
+                checkout scm
+                
+                // Display commit information
+                sh '''
+                    echo "Current commit:"
+                    git log -1 --oneline
+                '''
+            }
+        }
+        
+        stage('Setup Environment') {
+            steps {
+                echo 'Setting up test environment...'
+                
+                // Install Python dependencies
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r automation/templates/requirements.txt
+                '''
+                
+                // Install Playwright browsers
+                sh '''
+                    . venv/bin/activate
+                    playwright install chromium firefox
+                    playwright install-deps
+                '''
+            }
+        }
+        
+        stage('Verify Odoo Instance') {
+            steps {
+                echo 'Verifying Odoo instance is accessible...'
+                
+                sh '''
+                    curl -f ${ODOO_URL}/web/login || exit 1
+                '''
+            }
+        }
+        
+        stage('Run Unit Tests') {
+            steps {
+                echo 'Running unit tests...'
+                
+                sh '''
+                    . venv/bin/activate
+                    pytest automation/tests/unit/ \
+                        --junitxml=${TEST_RESULTS_DIR}/unit-results.xml \
+                        --html=${TEST_RESULTS_DIR}/unit-report.html \
+                        -v
+                '''
+            }
+        }
+        
+        stage('Run API Tests') {
+            steps {
+                echo 'Running API tests...'
+                
+                sh '''
+                    . venv/bin/activate
+                    pytest automation/tests/api/ \
+                        -m api \
+                        --junitxml=${TEST_RESULTS_DIR}/api-results.xml \
+                        --html=${TEST_RESULTS_DIR}/api-report.html \
+                        -v
+                '''
+            }
+        }
+        
+        stage('Run UI Tests') {
+            parallel {
+                stage('Chromium') {
+                    steps {
+                        echo 'Running UI tests on Chromium...'
+                        
+                        sh '''
+                            . venv/bin/activate
+                            pytest automation/tests/ui/ \
+                                -m ui \
+                                --browser=chromium \
+                                --junitxml=${TEST_RESULTS_DIR}/ui-chromium-results.xml \
+                                --html=${TEST_RESULTS_DIR}/ui-chromium-report.html \
+                                -v
+                        '''
+                    }
+                }
+                
+                stage('Firefox') {
+                    steps {
+                        echo 'Running UI tests on Firefox...'
+                        
+                        sh '''
+                            . venv/bin/activate
+                            pytest automation/tests/ui/ \
+                                -m ui \
+                                --browser=firefox \
+                                --junitxml=${TEST_RESULTS_DIR}/ui-firefox-results.xml \
+                                --html=${TEST_RESULTS_DIR}/ui-firefox-report.html \
+                                -v
+                        '''
+                    }
+                }
+            }
+        }
+        
+        stage('Run Smoke Tests') {
+            when {
+                branch 'main'
+            }
+            steps {
+                echo 'Running smoke tests...'
+                
+                sh '''
+                    . venv/bin/activate
+                    pytest automation/tests/ \
+                        -m smoke \
+                        --junitxml=${TEST_RESULTS_DIR}/smoke-results.xml \
+                        --html=${TEST_RESULTS_DIR}/smoke-report.html \
+                        -v
+                '''
+            }
+        }
+        
+        stage('Generate Reports') {
+            steps {
+                echo 'Generating test reports...'
+                
+                // Publish HTML reports
+                publishHTML([
+                    allowMissing: false,
+                    alwaysLinkToLastBuild: true,
+                    keepAll: true,
+                    reportDir: TEST_RESULTS_DIR,
+                    reportFiles: 'unit-report.html, api-report.html, ui-chromium-report.html, ui-firefox-report.html',
+                    reportName: 'Test Reports',
+                    reportTitles: 'Odoo Automation Test Results'
+                ])
+                
+                // Publish JUnit test results
+                junit "${TEST_RESULTS_DIR}/*.xml"
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Cleaning up...'
+            
+            // Archive test artifacts
+            archiveArtifacts artifacts: "${TEST_RESULTS_DIR}/**/*", allowEmptyArchive: true
+            
+            // Archive screenshots and videos on failure
+            archiveArtifacts artifacts: "test-results/screenshots/**/*.png", allowEmptyArchive: true
+            archiveArtifacts artifacts: "test-results/videos/**/*.webm", allowEmptyArchive: true
+            
+            // Clean workspace
+            cleanWs(
+                deleteDirs: true,
+                patterns: [
+                    [pattern: 'venv/', type: 'INCLUDE'],
+                    [pattern: '.pytest_cache/', type: 'INCLUDE']
+                ]
+            )
+        }
+        
+        success {
+            echo 'All tests passed! ✅'
+            
+            // Send success notification
+            emailext(
+                subject: "✅ Odoo Tests Passed - Build #${BUILD_NUMBER}",
+                body: """
+                    All tests passed successfully!
+                    
+                    Build: ${BUILD_NUMBER}
+                    Job: ${JOB_NAME}
+                    Duration: ${currentBuild.durationString}
+                    
+                    View results: ${BUILD_URL}
+                """,
+                to: "${env.DEVELOPER_EMAIL}",
+                mimeType: 'text/plain'
+            )
+        }
+        
+        failure {
+            echo 'Tests failed! ❌'
+            
+            // Send failure notification
+            emailext(
+                subject: "❌ Odoo Tests Failed - Build #${BUILD_NUMBER}",
+                body: """
+                    Some tests failed. Please review the results.
+                    
+                    Build: ${BUILD_NUMBER}
+                    Job: ${JOB_NAME}
+                    Duration: ${currentBuild.durationString}
+                    
+                    View results: ${BUILD_URL}
+                    Console output: ${BUILD_URL}console
+                """,
+                to: "${env.DEVELOPER_EMAIL}",
+                mimeType: 'text/plain'
+            )
+        }
+        
+        unstable {
+            echo 'Tests are unstable! ⚠️'
+        }
+    }
+}
+

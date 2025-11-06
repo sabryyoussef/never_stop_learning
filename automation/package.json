@@ -1,0 +1,17 @@
+{
+  "name": "automation",
+  "version": "1.0.0",
+  "description": "Welcome to your comprehensive learning path for mastering UI automation testing in Odoo! This repository contains a structured 6-week program based on **Raghav Pal's Automation Step by Step** series, tailored specifically for Odoo module development.",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.10.0"
+  }
+}
