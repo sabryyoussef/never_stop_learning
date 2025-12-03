@@ -9,6 +9,23 @@ Complete learning path for mastering UI automation testing in Odoo, based on Rag
 
 **Location:** `/automation/`
 
+### 🔧 Odoo Development Paths
+
+#### 1. Odoo ORM Methods (15 Lessons)
+Master all essential Odoo ORM operations through a structured 4-phase approach.
+
+**Location:** `/odoo/odoo_orm_methods/`
+
+#### 2. Odoo Hooks (5 Lessons)
+Learn to use hooks for module lifecycle management and data migration.
+
+**Location:** `/odoo/odoo_hooks/`
+
+#### 3. Odoo Portal Development (18 Lessons)
+Build custom portals for external users with secure, user-friendly interfaces.
+
+**Location:** `/odoo/odoo_portal_development/`
+
 #### What's Included:
 - **7 Phases** covering testing fundamentals to CI/CD integration
 - **15 Curated Videos** with Odoo-specific context
@@ -34,20 +51,37 @@ cat README.md         # Setup instructions
 
 ```
 never_stop_learning/
-├── automation/              # Odoo UI Automation Testing
-│   ├── LEARNING_PLAN.md    # Complete 7-phase plan
-│   ├── README.md           # Setup guide
-│   ├── progress.json       # Progress tracker
-│   ├── phase1_foundation/  # Testing mindset
-│   ├── phase2_api_testing/ # Postman & APIs
-│   ├── phase3_playwright/  # Playwright (main)
-│   ├── phase4_cypress/     # Cypress alternative
-│   ├── phase5_selenium/    # Selenium fallback
-│   ├── phase6_jenkins/     # CI/CD integration
-│   ├── phase7_performance/ # JMeter load testing
-│   ├── templates/          # Reusable configs
-│   └── examples/           # Working test examples
-└── README.md               # This file
+├── automation/                      # Odoo UI Automation Testing
+│   ├── LEARNING_PLAN.md            # Complete 7-phase plan
+│   ├── README.md                   # Setup guide
+│   ├── progress.json               # Progress tracker
+│   ├── phase1_foundation/          # Testing mindset
+│   ├── phase2_api_testing/         # Postman & APIs
+│   ├── phase3_playwright/          # Playwright (main)
+│   ├── phase4_cypress/             # Cypress alternative
+│   ├── phase5_selenium/            # Selenium fallback
+│   ├── phase6_jenkins/             # CI/CD integration
+│   ├── phase7_performance/         # JMeter load testing
+│   ├── templates/                  # Reusable configs
+│   └── examples/                   # Working test examples
+├── odoo/                            # Odoo Development Paths
+│   ├── odoo_orm_methods/           # 15 lessons in 4 phases
+│   │   ├── phase1_foundation/      # Search, read operations
+│   │   ├── phase2_write_operations/# Create, update, delete
+│   │   ├── phase3_advanced_operations/ # Browse, recordset, context
+│   │   └── phase4_specialized_methods/ # Copy, name_get, best practices
+│   ├── odoo_hooks/                 # 5 lessons on module hooks
+│   │   ├── lesson_01_introduction.md
+│   │   ├── lesson_02_pre_post_init_hooks.md
+│   │   ├── lesson_03_update_hooks.md
+│   │   ├── lesson_04_uninstall_hooks.md
+│   │   └── lesson_05_advanced_patterns.md
+│   └── odoo_portal_development/   # 18 lessons in 4 phases
+│       ├── phase1_introduction/    # Setup and basics
+│       ├── phase2_portal_views/    # Views and templates
+│       ├── phase3_functionality/   # Features and auth
+│       └── phase4_advanced/        # Security and deployment
+└── README.md                        # This file
 ```
 
 ## 🚀 Getting Started
@@ -127,8 +161,14 @@ This repository is for educational purposes. Individual resources and tools ment
 ---
 
 **Created by:** Sabry Youssef  
-**Last Updated:** 2025-11-06  
-**Current Focus:** Odoo UI Automation Testing
+**Last Updated:** 2025-12-03  
+**Current Focus:** Odoo Development & Automation Testing
 
 🌟 Never Stop Learning! 🌟
+
+---
+
+## 🌐 GitHub Pages
+
+View the online documentation: [https://sabryyoussef.github.io/never_stop_learning/](https://sabryyoussef.github.io/never_stop_learning/)
 
