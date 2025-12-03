@@ -1,0 +1,137 @@
+{
+  "name": "Test LinkedIn Post",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "postText",
+              "value": "=🧪 Testing LinkedIn integration with n8n!\n\nThis is a test post to confirm everything is working correctly.\n\n✅ Automated with n8n workflow automation\n📅 Posted: {{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-post-content",
+      "name": "Set Post Content",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.postText }}",
+        "postAs": "person",
+        "additionalFields": {}
+      },
+      "id": "post-to-linkedin",
+      "name": "Post to LinkedIn",
+      "type": "n8n-nodes-base.linkedIn",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ],
+      "credentials": {
+        "linkedInOAuth2Api": {
+          "id": "",
+          "name": "LinkedIn account"
+        }
+      },
+      "notes": "Configure LinkedIn OAuth2 credentials"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "=✅ LinkedIn post published successfully!"
+            },
+            {
+              "name": "postId",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "postUrl",
+              "value": "={{ $json.url || 'Check your LinkedIn profile' }}"
+            },
+            {
+              "name": "readableOutput",
+              "value": "=# 💼 LinkedIn Test Post Result\n\n## ✅ Post Published Successfully!\n\n**Post ID:** {{ $json.id }}\n**Status:** Published\n**Post Text:** {{ $('Set Post Content').item.json.postText }}\n\n**View your post on LinkedIn!**\n\n---\n\n✅ LinkedIn integration is working correctly!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-result",
+      "name": "Format Result",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Set Post Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Post Content": {
+      "main": [
+        [
+          {
+            "node": "Post to LinkedIn",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to LinkedIn": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T07:15:00.000Z",
+  "versionId": "test-linkedin-post-v1"
+}
+

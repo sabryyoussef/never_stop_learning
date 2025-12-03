@@ -1,0 +1,16 @@
+{
+  "name": "lesson-04-cypress-practice",
+  "version": "1.0.0",
+  "description": "Practice project for Cypress Odoo testing",
+  "scripts": {
+    "test": "cypress run",
+    "test:headed": "cypress open",
+    "test:chrome": "cypress run --browser chrome",
+    "test:firefox": "cypress run --browser firefox",
+    "test:edge": "cypress run --browser edge"
+  },
+  "devDependencies": {
+    "cypress": "^13.6.0"
+  }
+}
+

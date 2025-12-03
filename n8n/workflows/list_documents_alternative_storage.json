@@ -1,0 +1,313 @@
+{
+  "name": "List Documents - Alternative Storage Options",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-alt",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "list",
+        "value": "storageType",
+        "options": {}
+      },
+      "id": "select-storage",
+      "name": "Select Storage Type",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -20,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.storageType }}",
+              "rightValue": "googleDrive",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-storage-type",
+      "name": "Check Storage Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "object",
+        "operation": "getAll",
+        "returnAll": true,
+        "bucketName": "=your-bucket-name",
+        "options": {}
+      },
+      "id": "aws-s3-list",
+      "name": "List Files from AWS S3",
+      "type": "n8n-nodes-base.awsS3",
+      "typeVersion": 2,
+      "position": [
+        420,
+        400
+      ],
+      "credentials": {
+        "aws": {
+          "id": "",
+          "name": "AWS account"
+        }
+      },
+      "notes": "Configure your S3 bucket name and credentials"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "operation": "list",
+        "returnAll": true,
+        "options": {
+          "fields": [
+            "id",
+            "name",
+            "mimeType",
+            "size",
+            "modifiedTime"
+          ],
+          "q": "trashed = false"
+        }
+      },
+      "id": "google-drive-list-alt",
+      "name": "List Files from Google Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        420,
+        200
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "list",
+        "returnAll": true,
+        "path": "=/",
+        "options": {}
+      },
+      "id": "dropbox-list",
+      "name": "List Files from Dropbox",
+      "type": "n8n-nodes-base.dropbox",
+      "typeVersion": 2,
+      "position": [
+        420,
+        500
+      ],
+      "credentials": {
+        "dropboxApi": {
+          "id": "",
+          "name": "Dropbox account"
+        }
+      },
+      "notes": "Configure Dropbox credentials"
+    },
+    {
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "format-1",
+              "name": "fileName",
+              "value": "={{ $json.name || $json.Key || $json.path_display || 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "format-2",
+              "name": "fileSize",
+              "value": "={{ $json.size ? ($json.size / 1024).toFixed(2) + ' KB' : ($json.size_bytes ? ($json.size_bytes / 1024).toFixed(2) + ' KB' : 'N/A') }}",
+              "type": "string"
+            },
+            {
+              "id": "format-3",
+              "name": "modifiedDate",
+              "value": "={{ $json.modifiedTime || $json.LastModified || $json.client_modified || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "format-4",
+              "name": "fileType",
+              "value": "={{ $json.mimeType || $json.content_type || 'Unknown' }}",
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "id": "format-all",
+      "name": "Format File Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "options": {},
+        "assignments": {
+          "assignments": [
+            {
+              "id": "summary-alt",
+              "name": "totalFiles",
+              "value": "={{ $input.all().length }}",
+              "type": "number"
+            },
+            {
+              "id": "summary-alt-2",
+              "name": "fileList",
+              "value": "={{ $input.all().map(item => item.json) }}",
+              "type": "array"
+            }
+          ]
+        }
+      },
+      "id": "create-summary-alt",
+      "name": "Create Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        860,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Select Storage Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Storage Type": {
+      "main": [
+        [
+          {
+            "node": "Check Storage Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Storage Type": {
+      "main": [
+        [
+          {
+            "node": "List Files from Google Drive",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Files from AWS S3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "List Files from Dropbox",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Files from Google Drive": {
+      "main": [
+        [
+          {
+            "node": "Format File Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Files from AWS S3": {
+      "main": [
+        [
+          {
+            "node": "Format File Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Files from Dropbox": {
+      "main": [
+        [
+          {
+            "node": "Format File Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format File Info": {
+      "main": [
+        [
+          {
+            "node": "Create Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T02:20:00.000Z",
+  "versionId": "list-documents-alt-v1"
+}
+

@@ -1,0 +1,152 @@
+{
+  "name": "Post to Facebook",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "postMessage",
+              "value": "=Hello from n8n! This is an automated post. 🚀"
+            },
+            {
+              "name": "postLink",
+              "value": "="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-post-content",
+      "name": "Set Post Content",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "edge": "feed",
+        "node": "=YOUR_PAGE_ID",
+        "options": {
+          "queryParameters": {
+            "parameter": [
+              {
+                "name": "message",
+                "value": "={{ $json.postMessage }}"
+              },
+              {
+                "name": "link",
+                "value": "={{ $json.postLink }}"
+              }
+            ]
+          }
+        },
+        "graphApiVersion": "v21.0",
+        "httpRequestMethod": "POST"
+      },
+      "id": "post-to-facebook",
+      "name": "Post to Facebook Page",
+      "type": "n8n-nodes-base.facebookGraphApi",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ],
+      "credentials": {
+        "facebookGraphApi": {
+          "id": "",
+          "name": "Facebook Graph API"
+        }
+      },
+      "notes": "Configure:\n1. Facebook Graph API credentials\n2. Your Page ID in the 'node' field"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "status",
+              "value": "=✅ Post published successfully!"
+            },
+            {
+              "name": "postId",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "readableOutput",
+              "value": "=# 📘 Facebook Post Result\n\n## ✅ Post Published Successfully!\n\n**Post ID:** {{ $json.id }}\n**Status:** Published\n**Message:** {{ $('Set Post Content').item.json.postMessage }}\n\n---\n\nView your post on Facebook!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-result",
+      "name": "Format Result",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Set Post Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Post Content": {
+      "main": [
+        [
+          {
+            "node": "Post to Facebook Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post to Facebook Page": {
+      "main": [
+        [
+          {
+            "node": "Format Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T04:00:00.000Z",
+  "versionId": "post-to-facebook-v1"
+}
+

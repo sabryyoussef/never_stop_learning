@@ -1,0 +1,13 @@
+# Cypress
+node_modules/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Test results
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+

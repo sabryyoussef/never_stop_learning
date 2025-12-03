@@ -1,0 +1,177 @@
+{
+  "name": "Cleanup Old Gmail Messages",
+  "nodes": [
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "gmailAccount",
+              "value": "vendorah2@gmail.com"
+            },
+            {
+              "name": "deleteBeforeYear",
+              "value": "2024"
+            },
+            {
+              "name": "deleteBeforeDate",
+              "value": "=2024-01-01"
+            },
+            {
+              "name": "searchQuery",
+              "value": "=before:2024/1/1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-config",
+      "name": "Set Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getAll",
+        "returnAll": false,
+        "limit": 100,
+        "simple": false,
+        "options": {
+          "q": "={{ $json.searchQuery }}"
+        }
+      },
+      "id": "get-old-messages",
+      "name": "Get Old Messages",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Configure Gmail OAuth2 credentials for vendorah2@gmail.com"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter and prepare messages for deletion\nconst messages = $input.all();\nconst config = $('Set Configuration').first().json;\n\nconst messagesToDelete = [];\nconst currentYear = new Date().getFullYear();\nconst targetYear = parseInt(config.deleteBeforeYear);\n\nmessages.forEach((item) => {\n  const message = item.json;\n  \n  // Extract date from message\n  let messageDate = null;\n  if (message.internalDate) {\n    messageDate = new Date(parseInt(message.internalDate));\n  } else if (message.payload && message.payload.headers) {\n    const dateHeader = message.payload.headers.find(h => h.name.toLowerCase() === 'date');\n    if (dateHeader) {\n      messageDate = new Date(dateHeader.value);\n    }\n  }\n  \n  if (messageDate && messageDate.getFullYear() < targetYear) {\n    messagesToDelete.push({\n      id: message.id,\n      threadId: message.threadId,\n      subject: message.payload?.headers?.find(h => h.name === 'Subject')?.value || 'No Subject',\n      from: message.payload?.headers?.find(h => h.name === 'From')?.value || 'Unknown',\n      date: messageDate.toISOString().split('T')[0],\n      year: messageDate.getFullYear()\n    });\n  }\n});\n\n// Generate summary\nconst summary = {\n  totalFound: messages.length,\n  toDelete: messagesToDelete.length,\n  oldestYear: messagesToDelete.length > 0 \n    ? Math.min(...messagesToDelete.map(m => m.year))\n    : null,\n  newestYear: messagesToDelete.length > 0\n    ? Math.max(...messagesToDelete.map(m => m.year))\n    : null,\n  messages: messagesToDelete.slice(0, 50) // Limit preview to 50\n};\n\nreturn messagesToDelete.map(msg => ({\n  json: {\n    messageId: msg.id,\n    threadId: msg.threadId,\n    subject: msg.subject,\n    from: msg.from,\n    date: msg.date,\n    year: msg.year,\n    summary: summary\n  }\n}));"
+      },
+      "id": "filter-messages",
+      "name": "Filter Messages by Year",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "delete",
+        "messageId": "={{ $json.messageId }}"
+      },
+      "id": "delete-message",
+      "name": "Delete Message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Deletes each old message. Use with caution!"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "summary",
+              "value": "=✅ Cleanup Complete!\n\n📊 Summary:\n- Total messages found: {{ $('Filter Messages by Year').first().json.summary.totalFound }}\n- Messages deleted: {{ $('Filter Messages by Year').first().json.summary.toDelete }}\n- Oldest year: {{ $('Filter Messages by Year').first().json.summary.oldestYear }}\n- Newest year: {{ $('Filter Messages by Year').first().json.summary.newestYear }}\n\n⚠️ Note: This workflow deleted messages permanently."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "create-summary",
+      "name": "Create Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Set Configuration": {
+      "main": [
+        [
+          {
+            "node": "Get Old Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Old Messages": {
+      "main": [
+        [
+          {
+            "node": "Filter Messages by Year",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Messages by Year": {
+      "main": [
+        [
+          {
+            "node": "Delete Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Message": {
+      "main": [
+        [
+          {
+            "node": "Create Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T06:00:00.000Z",
+  "versionId": "cleanup-old-gmail-v1"
+}
+

@@ -1,0 +1,86 @@
+{
+  "name": "List Folders - Simple (No File Write)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "options": {
+          "q": "mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        }
+      },
+      "id": "google-drive-folders",
+      "name": "Get All Folders",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate simple Markdown format\nconst items = $input.all();\n\nlet markdown = '# 📁 Google Drive Folders\\n\\n';\nmarkdown += `**Total:** ${items.length} folders\\n\\n`;\nmarkdown += '| # | Folder Name | Folder ID | Modified Date |\\n';\nmarkdown += '|---|-------------|-----------|---------------|\\n';\n\nitems.forEach((item, index) => {\n  const folder = item.json;\n  const name = folder.name || 'Unnamed';\n  const id = folder.id || 'N/A';\n  const modified = folder.modifiedTime ? new Date(folder.modifiedTime).toLocaleDateString() : 'N/A';\n  markdown += `| ${index + 1} | ${name} | \\`${id}\\` | ${modified} |\\n`;\n});\n\nreturn [{\n  json: {\n    markdown: markdown,\n    totalFolders: items.length,\n    folders: items.map(item => ({\n      name: item.json.name,\n      id: item.json.id,\n      link: item.json.webViewLink || `https://drive.google.com/drive/folders/${item.json.id}`\n    }))\n  }\n}];"
+      },
+      "id": "generate-markdown",
+      "name": "Generate Markdown Table",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Get All Folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Folders": {
+      "main": [
+        [
+          {
+            "node": "Generate Markdown Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T03:00:00.000Z",
+  "versionId": "list-folders-simple-v1"
+}
+

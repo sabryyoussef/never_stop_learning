@@ -1,0 +1,86 @@
+{
+  "name": "Scrape Vetution Products",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.vetution.com/products/?page=1",
+        "options": {
+          "headers": {
+            "headers": [
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+              }
+            ]
+          }
+        }
+      },
+      "id": "fetch-page",
+      "name": "Fetch Vetution Products Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse HTML and extract product information\nconst html = $input.item.json.data || $input.item.json.body || '';\n\n// Extract products using regex patterns\nconst products = [];\n\n// Pattern to find product cards/items\n// Looking for product names, prices, descriptions\nconst productPattern = /<div[^>]*class=\"[^\"]*product[^\"]*\"[^>]*>([\\s\\S]*?)<\\/div>/gi;\n\n// Try to extract product information\n// Since we have the HTML content, let's parse it\nlet match;\nlet productCount = 0;\n\n// Extract product names (looking for common patterns)\nconst namePattern = /<h[1-6][^>]*>([^<]+)<\\/h[1-6]>/gi;\nconst linkPattern = /<a[^>]*href=\"([^\"]+)\"[^>]*>([^<]+)<\\/a>/gi;\n\n// Simple extraction - look for text that might be product names\n// Based on the website structure, products seem to be in specific divs\nconst lines = html.split('\\n');\nlet currentProduct = null;\n\n// Look for product-related text patterns\nfor (let i = 0; i < lines.length && products.length < 50; i++) {\n  const line = lines[i];\n  \n  // Look for product names (usually in headings or links)\n  if (line.includes('Quick Shop') || line.includes('tablets') || line.includes('ml') || line.includes('gm')) {\n    // Extract potential product name\n    const nameMatch = line.match(/>([^<]+(?:tablets?|ml|gm|dose|piece)[^<]*)</i);\n    if (nameMatch && nameMatch[1]) {\n      const productName = nameMatch[1].trim();\n      if (productName.length > 5 && productName.length < 200) {\n        // Extract additional info from surrounding lines\n        let description = '';\n        let brand = '';\n        let size = '';\n        \n        // Look for brand name (usually before product name)\n        for (let j = Math.max(0, i - 5); j < i; j++) {\n          const prevLine = lines[j];\n          if (prevLine.includes('brand') || prevLine.match(/[A-Z][a-z]+\\s+[A-Z]/)) {\n            const brandMatch = prevLine.match(/>([A-Z][a-zA-Z\\s]+)</);\n            if (brandMatch) brand = brandMatch[1].trim();\n          }\n        }\n        \n        // Extract size/quantity from the same line or next lines\n        const sizeMatch = line.match(/(\\d+\\s*(?:ml|gm|tablets?|dose|piece|sachets?))/i);\n        if (sizeMatch) size = sizeMatch[1];\n        \n        // Extract ingredients or description\n        for (let j = i; j < Math.min(lines.length, i + 10); j++) {\n          const nextLine = lines[j];\n          if (nextLine.includes('ingredient') || nextLine.match(/[A-Z][a-z]+\\s+[A-Z][a-z]+/)) {\n            const descMatch = nextLine.match(/>([^<]+)</);\n            if (descMatch && descMatch[1].length > 3) {\n              description = descMatch[1].trim();\n              break;\n            }\n          }\n        }\n        \n        products.push({\n          number: products.length + 1,\n          name: productName,\n          brand: brand || 'Not specified',\n          size: size || 'Not specified',\n          description: description || 'Veterinary product',\n          rawLine: line.substring(0, 100)\n        });\n      }\n    }\n  }\n}\n\n// If we didn't find products with the above method, try a simpler approach\nif (products.length === 0) {\n  // Extract visible text that looks like product names\n  const textContent = html.replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ');\n  const sentences = textContent.split(/[.!?]/);\n  \n  sentences.forEach((sentence, index) => {\n    const trimmed = sentence.trim();\n    // Look for product-like patterns\n    if (trimmed.length > 10 && trimmed.length < 150 && \n        (trimmed.match(/\\d+\\s*(ml|gm|tablets?|dose)/i) || \n         trimmed.match(/[A-Z][a-z]+\\s+[A-Z]/))) {\n      products.push({\n        number: products.length + 1,\n        name: trimmed.substring(0, 100),\n        brand: 'Extracted',\n        size: 'See name',\n        description: 'Product from Vetution'\n      });\n      \n      if (products.length >= 20) return; // Limit to 20\n    }\n  });\n}\n\n// Generate readable output\nlet readableOutput = '# 🐾 Vetution Products\\n\\n';\nreadableOutput += `**Source:** https://www.vetution.com/products/?page=1\\n`;\nreadableOutput += `**Products Found:** ${products.length}\\n\\n`;\nreadableOutput += '---\\n\\n';\n\nproducts.slice(0, 20).forEach((product, index) => {\n  readableOutput += `## ${index + 1}. ${product.name}\\n\\n`;\n  readableOutput += `- **Brand:** ${product.brand}\\n`;\n  readableOutput += `- **Size/Quantity:** ${product.size}\\n`;\n  readableOutput += `- **Description:** ${product.description}\\n`;\n  readableOutput += '\\n---\\n\\n';\n});\n\n// Generate markdown table\nlet markdownTable = '| # | Product Name | Brand | Size |\\n';\nmarkdownTable += '|---|--------------|-------|------|\\n';\n\nproducts.slice(0, 20).forEach((product, index) => {\n  const shortName = product.name.length > 40 ? product.name.substring(0, 40) + '...' : product.name;\n  markdownTable += `| ${index + 1} | ${shortName} | ${product.brand} | ${product.size} |\\n`;\n});\n\nreturn [{\n  json: {\n    totalProducts: products.length,\n    products: products.slice(0, 20),\n    readableOutput: readableOutput,\n    markdownTable: markdownTable,\n    sourceUrl: 'https://www.vetution.com/products/?page=1'\n  }\n}];"
+      },
+      "id": "parse-products",
+      "name": "Parse Products from HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Fetch Vetution Products Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Vetution Products Page": {
+      "main": [
+        [
+          {
+            "node": "Parse Products from HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T03:30:00.000Z",
+  "versionId": "scrape-vetution-v1"
+}
+

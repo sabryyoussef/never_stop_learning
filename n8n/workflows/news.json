@@ -1,0 +1,223 @@
+{
+    "name": "News RSS Scraper (No-Auth)",
+    "nodes": [
+      {
+        "parameters": {},
+        "id": "manual-trigger-1",
+        "name": "Manual Trigger",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [-540, -40]
+      },
+      {
+        "parameters": {
+          "url": "https://feeds.bbci.co.uk/news/rss.xml",
+          "responseFormat": "string",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "id": "http-req-1",
+        "name": "Fetch RSS",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [-320, -40]
+      },
+      {
+        "parameters": {
+          "propertyName": "data",
+          "options": {
+            "compact": false,
+            "alwaysOutputArray": false
+          }
+        },
+        "id": "xml-parse-1",
+        "name": "Parse XML",
+        "type": "n8n-nodes-base.xml",
+        "typeVersion": 2,
+        "position": [-120, -40]
+      },
+      {
+        "parameters": {
+          "options": {},
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a1",
+                "name": "items",
+                "value": "={{ $json.rss.channel[0].item }}",
+                "type": "json"
+              }
+            ]
+          }
+        },
+        "id": "set-items-array",
+        "name": "Extract Items Array",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [80, -40]
+      },
+      {
+        "parameters": {
+          "iterations": "={{ $json.items.length }}",
+          "options": {}
+        },
+        "id": "item-lister",
+        "name": "Item Lists (Fan-Out)",
+        "type": "n8n-nodes-base.itemLists",
+        "typeVersion": 2,
+        "position": [280, -40]
+      },
+      {
+        "parameters": {
+          "options": {},
+          "assignments": {
+            "assignments": [
+              {
+                "id": "b1",
+                "name": "title",
+                "type": "string",
+                "value": "={{ $json.items[$itemIndex].title[0] }}"
+              },
+              {
+                "id": "b2",
+                "name": "link",
+                "type": "string",
+                "value": "={{ $json.items[$itemIndex].link[0] }}"
+              },
+              {
+                "id": "b3",
+                "name": "pubDate",
+                "type": "string",
+                "value": "={{ $json.items[$itemIndex].pubDate[0] }}"
+              },
+              {
+                "id": "b4",
+                "name": "description",
+                "type": "string",
+                "value": "={{ $json.items[$itemIndex].description ? $json.items[$itemIndex].description[0] : '' }}"
+              }
+            ]
+          }
+        },
+        "id": "normalize",
+        "name": "Normalize Fields",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [500, -40]
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "operation": "notContains",
+                "value1": "={{ $json.title || '' }}",
+                "value2": "sport"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "filter",
+        "name": "Filter (Example)",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [720, -40]
+      },
+      {
+        "parameters": {
+          "options": {},
+          "assignments": {
+            "assignments": [
+              {
+                "id": "c1",
+                "name": "headline",
+                "type": "string",
+                "value": "={{ $json.title }}"
+              },
+              {
+                "id": "c2",
+                "name": "url",
+                "type": "string",
+                "value": "={{ $json.link }}"
+              },
+              {
+                "id": "c3",
+                "name": "published_at",
+                "type": "string",
+                "value": "={{ $json.pubDate }}"
+              }
+            ]
+          }
+        },
+        "id": "final-shape",
+        "name": "Final Shape",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [940, -120]
+      }
+    ],
+    "connections": {
+      "Manual Trigger": {
+        "main": [
+          [
+            { "node": "Fetch RSS", "type": "main", "index": 0 }
+          ]
+        ]
+      },
+      "Fetch RSS": {
+        "main": [
+          [
+            { "node": "Parse XML", "type": "main", "index": 0 }
+          ]
+        ]
+      },
+      "Parse XML": {
+        "main": [
+          [
+            { "node": "Extract Items Array", "type": "main", "index": 0 }
+          ]
+        ]
+      },
+      "Extract Items Array": {
+        "main": [
+          [
+            { "node": "Item Lists (Fan-Out)", "type": "main", "index": 0 }
+          ]
+        ]
+      },
+      "Item Lists (Fan-Out)": {
+        "main": [
+          [
+            { "node": "Normalize Fields", "type": "main", "index": 0 }
+          ]
+        ]
+      },
+      "Normalize Fields": {
+        "main": [
+          [
+            { "node": "Filter (Example)", "type": "main", "index": 0 }
+          ]
+        ]
+      },
+      "Filter (Example)": {
+        "main": [
+          [
+            { "node": "Final Shape", "type": "main", "index": 0 }
+          ],
+          []
+        ]
+      }
+    },
+    "pinData": {},
+    "active": false,
+    "settings": {
+      "executionOrder": "v1",
+      "saveManualExecutions": true,
+      "timezone": "UTC"
+    },
+    "versionId": "news-rss-scraper-v1",
+    "id": "news-rss-scraper-v1"
+  }
+  

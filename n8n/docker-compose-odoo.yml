@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data
+    networks:
+      - odoo-network
+
+  # Odoo 16
+  odoo-16:
+    image: odoo:16
+    depends_on:
+      - db
+    ports:
+      - "8068:8069"
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+    volumes:
+      - odoo-16-web-data:/var/lib/odoo
+      - odoo-16-config:/etc/odoo
+    networks:
+      - odoo-network
+
+  # Odoo 17
+  odoo-17:
+    image: odoo:17
+    depends_on:
+      - db
+    ports:
+      - "8070:8069"
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+    volumes:
+      - odoo-17-web-data:/var/lib/odoo
+      - odoo-17-config:/etc/odoo
+    networks:
+      - odoo-network
+
+  # Odoo 18
+  odoo-18:
+    image: odoo:18
+    depends_on:
+      - db
+    ports:
+      - "8071:8069"
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+    volumes:
+      - odoo-18-web-data:/var/lib/odoo
+      - odoo-18-config:/etc/odoo
+    networks:
+      - odoo-network
+
+  # Odoo 19
+  odoo-19:
+    image: odoo:19
+    depends_on:
+      - db
+    ports:
+      - "8072:8069"
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo
+    volumes:
+      - odoo-19-web-data:/var/lib/odoo
+      - odoo-19-config:/etc/odoo
+    networks:
+      - odoo-network
+
+volumes:
+  odoo-db-data:
+  odoo-16-web-data:
+  odoo-16-config:
+  odoo-17-web-data:
+  odoo-17-config:
+  odoo-18-web-data:
+  odoo-18-config:
+  odoo-19-web-data:
+  odoo-19-config:
+
+networks:
+  odoo-network:
+    driver: bridge
+

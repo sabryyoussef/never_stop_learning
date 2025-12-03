@@ -1,0 +1,76 @@
+{
+  "name": "Simple Test - Hello World",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "message",
+              "value": "Hello from n8n!"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "name": "testNumber",
+              "value": "=42"
+            },
+            {
+              "name": "readableOutput",
+              "value": "=✅ Test Successful!\n\n📝 Message: Hello from n8n!\n📅 Timestamp: {{ $now.toISO() }}\n🔢 Test Number: 42\n\n---\n\nThis is a simple test workflow that demonstrates basic n8n functionality."
+            },
+            {
+              "name": "markdownOutput",
+              "value": "=# Test Results\n\n## ✅ Test Successful\n\n- **Message:** Hello from n8n!\n- **Timestamp:** {{ $now.toISO() }}\n- **Test Number:** 42\n\n---\n\nThis workflow demonstrates:\n1. Manual trigger\n2. Data setting\n3. Output formatting"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-data",
+      "name": "Set Test Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Set Test Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T03:00:00.000Z",
+  "versionId": "simple-test-v1"
+}
+

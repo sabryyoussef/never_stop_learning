@@ -1,0 +1,76 @@
+{
+  "name": "Simple Test - Readable Output",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "testName",
+              "value": "=Simple n8n Test"
+            },
+            {
+              "name": "status",
+              "value": "=✅ Success"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $now.format('YYYY-MM-DD HH:mm:ss') }}"
+            },
+            {
+              "name": "readableReport",
+              "value": "=━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n   📋 TEST REPORT\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Status: Success\n📝 Test Name: Simple n8n Test\n📅 Executed: {{ $now.format('YYYY-MM-DD HH:mm:ss') }}\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nThis workflow demonstrates:\n  • Manual trigger execution\n  • Data formatting\n  • Readable output generation\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            },
+            {
+              "name": "markdownReport",
+              "value": "=# 📋 Test Report\n\n## ✅ Test Status: Success\n\n| Field | Value |\n|-------|-------|\n| Test Name | Simple n8n Test |\n| Status | ✅ Success |\n| Executed | {{ $now.format('YYYY-MM-DD HH:mm:ss') }} |\n\n---\n\n### What This Test Shows:\n\n1. ✅ Manual trigger works\n2. ✅ Set node formats data\n3. ✅ Output is readable\n4. ✅ Timestamps work correctly\n\n---\n\n**Result:** All tests passed! 🎉"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-data",
+      "name": "Generate Readable Report",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Generate Readable Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T03:00:00.000Z",
+  "versionId": "simple-test-readable-v1"
+}
+

@@ -1,0 +1,108 @@
+{
+  "name": "List All Documents from Storage",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "options": {}
+      },
+      "id": "google-drive-list",
+      "name": "List All Documents",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "fileId",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "fileName",
+              "value": "={{ $json.name }}"
+            },
+            {
+              "name": "fileType",
+              "value": "={{ $json.mimeType }}"
+            },
+            {
+              "name": "fileSize",
+              "value": "={{ $json.size ? Math.round($json.size / 1024) + ' KB' : 'N/A' }}"
+            },
+            {
+              "name": "modifiedDate",
+              "value": "={{ $json.modifiedTime }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-output",
+      "name": "Format Document Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "List All Documents",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List All Documents": {
+      "main": [
+        [
+          {
+            "node": "Format Document Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T02:35:00.000Z",
+  "versionId": "list-all-documents-compatible-v1"
+}
+

@@ -1,0 +1,160 @@
+{
+  "name": "List Folders in Markdown Format",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "options": {
+          "q": "mimeType = 'application/vnd.google-apps.folder' and trashed = false"
+        }
+      },
+      "id": "google-drive-folders",
+      "name": "Get All Folders",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "folderName",
+              "value": "={{ $json.name }}"
+            },
+            {
+              "name": "folderId",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "createdDate",
+              "value": "={{ $json.createdTime }}"
+            },
+            {
+              "name": "modifiedDate",
+              "value": "={{ $json.modifiedTime }}"
+            },
+            {
+              "name": "viewLink",
+              "value": "={{ $json.webViewLink || 'https://drive.google.com/drive/folders/' + $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-folder-info",
+      "name": "Format Folder Info",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Markdown format for folders\nconst items = $input.all();\n\nlet markdown = '# Google Drive Folders\\n\\n';\nmarkdown += `Total folders: **${items.length}**\\n\\n`;\nmarkdown += '---\\n\\n';\n\nitems.forEach((item, index) => {\n  const folder = item.json;\n  markdown += `## ${index + 1}. ${folder.folderName}\\n\\n`;\n  markdown += `- **Folder ID:** \`${folder.folderId}\`\\n`;\n  markdown += `- **Created:** ${folder.createdDate || 'N/A'}\\n`;\n  markdown += `- **Modified:** ${folder.modifiedDate || 'N/A'}\\n`;\n  markdown += `- **Link:** [Open in Google Drive](${folder.viewLink})\\n`;\n  markdown += '\\n---\\n\\n';\n});\n\nreturn [{\n  json: {\n    markdown: markdown,\n    totalFolders: items.length,\n    generatedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "generate-markdown",
+      "name": "Generate Markdown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fileName": "=folders_list_{{ $now.format('YYYY-MM-DD_HH-mm-ss') }}.md",
+        "fileContent": "={{ $json.markdown }}",
+        "options": {}
+      },
+      "id": "write-markdown-file",
+      "name": "Write Markdown File",
+      "type": "n8n-nodes-base.writeFile",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Get All Folders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get All Folders": {
+      "main": [
+        [
+          {
+            "node": "Format Folder Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Folder Info": {
+      "main": [
+        [
+          {
+            "node": "Generate Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Markdown": {
+      "main": [
+        [
+          {
+            "node": "Write Markdown File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T03:00:00.000Z",
+  "versionId": "list-folders-markdown-v1"
+}
+

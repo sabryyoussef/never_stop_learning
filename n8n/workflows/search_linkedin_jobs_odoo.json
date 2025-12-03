@@ -1,0 +1,197 @@
+{
+  "name": "Search LinkedIn Jobs - Odoo Developers",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "searchQuery",
+              "value": "Odoo Developer"
+            },
+            {
+              "name": "keywords",
+              "value": "Odoo,Python,ERP,OpenERP"
+            },
+            {
+              "name": "location",
+              "value": "Remote"
+            },
+            {
+              "name": "maxResults",
+              "value": "25"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-search-params",
+      "name": "Set Search Parameters",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://www.linkedin.com/jobs/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "keywords",
+              "value": "={{ $json.searchQuery }}"
+            },
+            {
+              "name": "location",
+              "value": "={{ $json.location }}"
+            },
+            {
+              "name": "f_TPR",
+              "value": "r86400"
+            },
+            {
+              "name": "start",
+              "value": "0"
+            }
+          ]
+        },
+        "options": {
+          "headers": {
+            "headers": [
+              {
+                "name": "User-Agent",
+                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+              },
+              {
+                "name": "Accept",
+                "value": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "fetch-jobs-page",
+      "name": "Fetch LinkedIn Jobs Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse LinkedIn jobs from HTML\nconst html = $input.first().json.data || $input.first().json.body || '';\nconst searchQuery = $('Set Search Parameters').first().json.searchQuery;\n\n// Extract job listings from HTML\nconst jobs = [];\n\n// LinkedIn job cards are in specific divs with class 'job-search-card'\n// Try multiple patterns to extract job data\n\n// Pattern 1: Look for job card containers\nconst jobCardPattern = /<div[^>]*class=\"[^\"]*job-search-card[^\"]*\"[^>]*>([\\s\\S]*?)<\\/div>/gi;\n\n// Pattern 2: Look for job title links\nconst titleLinkPattern = /<a[^>]*href=\"([^\"]*jobs[^\"]*)\"[^>]*>([^<]+)<\\/a>/gi;\n\n// Pattern 3: Look for structured data (JSON-LD)\nconst jsonLdPattern = /<script[^>]*type=\"application\\/ld\\+json\"[^>]*>([\\s\\S]*?)<\\/script>/gi;\n\n// Try to extract from JSON-LD first (most reliable)\nlet jsonLdMatch;\nwhile ((jsonLdMatch = jsonLdPattern.exec(html)) !== null && jobs.length < 25) {\n  try {\n    const jsonData = JSON.parse(jsonLdMatch[1]);\n    if (Array.isArray(jsonData)) {\n      jsonData.forEach(item => {\n        if (item['@type'] === 'JobPosting' || item.title) {\n          jobs.push({\n            title: item.title || item.name || 'N/A',\n            company: item.hiringOrganization?.name || item.company?.name || 'N/A',\n            location: item.jobLocation?.address?.addressLocality || item.location || 'N/A',\n            description: item.description || '',\n            url: item.url || item['@id'] || '',\n            datePosted: item.datePosted || 'N/A'\n          });\n        }\n      });\n    } else if (jsonData['@type'] === 'JobPosting') {\n      jobs.push({\n        title: jsonData.title || jsonData.name || 'N/A',\n        company: jsonData.hiringOrganization?.name || jsonData.company?.name || 'N/A',\n        location: jsonData.jobLocation?.address?.addressLocality || jsonData.location || 'N/A',\n        description: jsonData.description || '',\n        url: jsonData.url || jsonData['@id'] || '',\n        datePosted: jsonData.datePosted || 'N/A'\n      });\n    }\n  } catch (e) {\n    // Skip invalid JSON\n  }\n}\n\n// If no JSON-LD found, try HTML parsing\nif (jobs.length === 0) {\n  // Extract job titles and links\n  let match;\n  const seenTitles = new Set();\n  \n  while ((match = titleLinkPattern.exec(html)) !== null && jobs.length < 25) {\n    const url = match[1];\n    const title = match[2].trim();\n    \n    if (title && title.length > 5 && title.length < 200 && !seenTitles.has(title)) {\n      seenTitles.add(title);\n      \n      // Try to extract company name (usually near the title)\n      const contextStart = Math.max(0, match.index - 500);\n      const contextEnd = Math.min(html.length, match.index + 500);\n      const context = html.substring(contextStart, contextEnd);\n      \n      const companyMatch = context.match(/<span[^>]*class=\"[^\"]*job-search-card__subtitle[^\"]*\"[^>]*>([^<]+)<\\/span>/i) ||\n                          context.match(/<h4[^>]*>([^<]+)<\\/h4>/i);\n      \n      const company = companyMatch ? companyMatch[1].trim() : 'N/A';\n      \n      // Try to extract location\n      const locationMatch = context.match(/<span[^>]*class=\"[^\"]*job-search-card__location[^\"]*\"[^>]*>([^<]+)<\\/span>/i);\n      const location = locationMatch ? locationMatch[1].trim() : 'N/A';\n      \n      jobs.push({\n        number: jobs.length + 1,\n        title: title,\n        company: company,\n        location: location,\n        url: url.startsWith('http') ? url : `https://www.linkedin.com${url}`,\n        description: 'Odoo Developer position',\n        datePosted: 'Recent'\n      });\n    }\n  }\n}\n\n// If still no jobs, create a simple extraction\nif (jobs.length === 0) {\n  // Look for any text that might be job titles\n  const lines = html.split('\\n');\n  let currentJob = null;\n  \n  for (let i = 0; i < lines.length && jobs.length < 25; i++) {\n    const line = lines[i];\n    \n    // Look for Odoo-related content\n    if (line.toLowerCase().includes('odoo') || \n        line.toLowerCase().includes('developer') ||\n        line.toLowerCase().includes('python')) {\n      \n      // Extract potential job title\n      const titleMatch = line.match(/>([^<]*(?:odoo|developer|python)[^<]*)</i);\n      if (titleMatch && titleMatch[1].trim().length > 5) {\n        jobs.push({\n          number: jobs.length + 1,\n          title: titleMatch[1].trim().substring(0, 100),\n          company: 'See LinkedIn',\n          location: 'Check listing',\n          url: 'https://www.linkedin.com/jobs/search/?keywords=Odoo%20Developer',\n          description: 'Odoo Developer position found',\n          datePosted: 'Recent'\n        });\n      }\n    }\n  }\n}\n\n// Generate markdown output\nlet markdownOutput = '# 💼 Odoo Developer Jobs on LinkedIn\\n\\n';\nmarkdownOutput += `**Search Query:** ${searchQuery}\\n`;\nmarkdownOutput += `**Jobs Found:** ${jobs.length}\\n`;\nmarkdownOutput += `**Date:** ${new Date().toISOString()}\\n\\n`;\nmarkdownOutput += '---\\n\\n';\n\njobs.forEach((job, index) => {\n  markdownOutput += `## ${index + 1}. ${job.title}\\n\\n`;\n  markdownOutput += `**Company:** ${job.company}\\n`;\n  markdownOutput += `**Location:** ${job.location}\\n`;\n  markdownOutput += `**Posted:** ${job.datePosted}\\n\\n`;\n  if (job.url) {\n    markdownOutput += `**Link:** [View Job](${job.url})\\n\\n`;\n  }\n  if (job.description && job.description.length > 0) {\n    markdownOutput += `**Description:** ${job.description.substring(0, 200)}...\\n\\n`;\n  }\n  markdownOutput += '---\\n\\n';\n});\n\n// Generate table\nlet tableOutput = '| # | Title | Company | Location |\\n';\ntableOutput += '|---|-------|---------|----------|\\n';\n\njobs.forEach((job, index) => {\n  const shortTitle = job.title.length > 50 ? job.title.substring(0, 50) + '...' : job.title;\n  const shortCompany = job.company.length > 30 ? job.company.substring(0, 30) + '...' : job.company;\n  tableOutput += `| ${index + 1} | ${shortTitle} | ${shortCompany} | ${job.location} |\\n`;\n});\n\nreturn [{\n  json: {\n    searchQuery: searchQuery,\n    totalJobs: jobs.length,\n    jobs: jobs,\n    markdownOutput: markdownOutput,\n    tableOutput: tableOutput,\n    summary: `✅ Found ${jobs.length} Odoo Developer jobs on LinkedIn!`,\n    searchUrl: 'https://www.linkedin.com/jobs/search/?keywords=Odoo%20Developer'\n  }\n}];"
+      },
+      "id": "parse-jobs",
+      "name": "Parse Jobs from HTML",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "readableOutput",
+              "value": "={{ $json.markdownOutput }}"
+            },
+            {
+              "name": "summary",
+              "value": "={{ $json.summary }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "totalJobs",
+              "value": "={{ $json.totalJobs }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "format-output",
+      "name": "Format Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Set Search Parameters",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Search Parameters": {
+      "main": [
+        [
+          {
+            "node": "Fetch LinkedIn Jobs Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch LinkedIn Jobs Page": {
+      "main": [
+        [
+          {
+            "node": "Parse Jobs from HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Jobs from HTML": {
+      "main": [
+        [
+          {
+            "node": "Format Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T07:20:00.000Z",
+  "versionId": "search-linkedin-jobs-odoo-v1"
+}
+

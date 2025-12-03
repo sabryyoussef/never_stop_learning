@@ -24,7 +24,9 @@
 - Testing JavaScript interactions
 
 ### Action Items
-- [ ] Install Cypress
+- [x] Created lesson-04-practice directory ✅
+- [ ] Install Cypress: `cd lessons/lesson-04-practice && npm install`
+- [ ] Run Cypress Test Runner: `npm run test:headed`
 - [ ] Create first Cypress test
 - [ ] Compare with Playwright approach
 

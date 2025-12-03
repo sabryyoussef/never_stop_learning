@@ -1,0 +1,80 @@
+{
+  "name": "Simple News Scraper - Big Output",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://feeds.bbci.co.uk/news/rss.xml",
+        "responseFormat": "string",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "get-rss",
+      "name": "Get BBC News RSS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse RSS and create big output\nconst xml = $input.first().json.data || $input.first().json.body || '';\n\n// Simple RSS parsing\nconst items = [];\nconst titleMatches = xml.matchAll(/<title><!\\[CDATA\\[(.*?)\\]\\]><\\/title>/g);\nconst linkMatches = xml.matchAll(/<link>(.*?)<\\/link>/g);\nconst descMatches = xml.matchAll(/<description><!\\[CDATA\\[(.*?)\\]\\]><\\/description>/g);\n\nconst titles = Array.from(titleMatches).map(m => m[1]);\nconst links = Array.from(linkMatches).map(m => m[1]);\nconst descriptions = Array.from(descMatches).map(m => m[1]);\n\n// Combine into items\nconst maxItems = Math.min(titles.length, links.length, descriptions.length, 50);\nfor (let i = 0; i < maxItems; i++) {\n  if (titles[i] && links[i]) {\n    items.push({\n      number: i + 1,\n      title: titles[i],\n      link: links[i],\n      description: descriptions[i] || 'No description'\n    });\n  }\n}\n\n// Create markdown output\nlet markdown = '# 📰 Latest News (Big Output)\\n\\n';\nmarkdown += `**Total Articles:** ${items.length}\\n`;\nmarkdown += `**Source:** BBC News RSS\\n`;\nmarkdown += `**Date:** ${new Date().toISOString()}\\n\\n`;\nmarkdown += '---\\n\\n';\n\nitems.forEach((item) => {\n  markdown += `## ${item.number}. ${item.title}\\n\\n`;\n  markdown += `**Link:** ${item.link}\\n\\n`;\n  if (item.description && item.description.length > 0) {\n    markdown += `${item.description}\\n\\n`;\n  }\n  markdown += '---\\n\\n';\n});\n\n// Create table\nlet table = '| # | Title | Link |\\n';\ntable += '|---|-------|------|\\n';\nitems.forEach((item) => {\n  const shortTitle = item.title.length > 60 ? item.title.substring(0, 60) + '...' : item.title;\n  table += `| ${item.number} | ${shortTitle} | [Read](${item.link}) |\\n`;\n});\n\nreturn [{\n  json: {\n    totalArticles: items.length,\n    articles: items,\n    markdownOutput: markdown,\n    tableOutput: table,\n    summary: `✅ Retrieved ${items.length} news articles!`\n  }\n}];"
+      },
+      "id": "parse-news",
+      "name": "Parse News & Format",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Get BBC News RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get BBC News RSS": {
+      "main": [
+        [
+          {
+            "node": "Parse News & Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T07:10:00.000Z",
+  "versionId": "simple-news-scraper-v1"
+}
+

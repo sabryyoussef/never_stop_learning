@@ -1,0 +1,132 @@
+{
+  "name": "Read Last 10 WhatsApp Messages",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v18.0/{{ $('Set Config').item.json.phoneNumberId }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "limit",
+                "value": "=10"
+              }
+            ]
+          }
+        }
+      },
+      "id": "get-messages",
+      "name": "Get Last 10 Messages",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "WhatsApp Business API"
+        }
+      },
+      "notes": "Requires WhatsApp Business API setup. See README for instructions."
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "phoneNumberId",
+              "value": "=YOUR_PHONE_NUMBER_ID"
+            },
+            {
+              "name": "accessToken",
+              "value": "=YOUR_ACCESS_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-config",
+      "name": "Set Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "notes": "Configure your WhatsApp Business API credentials here"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format messages for readable output\nconst items = $input.all();\nlet messages = [];\n\n// Extract messages from API response\nif (items[0] && items[0].json.data) {\n  messages = items[0].json.data.slice(0, 10);\n}\n\n// Format each message\nconst formattedMessages = messages.map((msg, index) => {\n  return {\n    number: index + 1,\n    from: msg.from || 'Unknown',\n    to: msg.to || 'Unknown',\n    message: msg.text?.body || msg.type || 'No text',\n    timestamp: msg.timestamp || 'Unknown',\n    type: msg.type || 'text',\n    messageId: msg.id || 'N/A'\n  };\n});\n\n// Generate readable output\nlet readableOutput = '# 📱 Last 10 WhatsApp Messages\\n\\n';\nreadableOutput += `**Total Messages:** ${formattedMessages.length}\\n\\n`;\nreadableOutput += '---\\n\\n';\n\nformattedMessages.forEach((msg, index) => {\n  readableOutput += `## ${index + 1}. Message from ${msg.from}\\n\\n`;\n  readableOutput += `- **From:** ${msg.from}\\n`;\n  readableOutput += `- **To:** ${msg.to}\\n`;\n  readableOutput += `- **Message:** ${msg.message}\\n`;\n  readableOutput += `- **Type:** ${msg.type}\\n`;\n  readableOutput += `- **Timestamp:** ${new Date(parseInt(msg.timestamp) * 1000).toLocaleString()}\\n`;\n  readableOutput += `- **Message ID:** ${msg.messageId}\\n`;\n  readableOutput += '\\n---\\n\\n';\n});\n\n// Generate markdown table\nlet markdownTable = '| # | From | Message | Type | Timestamp |\\n';\nmarkdownTable += '|---|------|---------|------|-----------|\\n';\n\nformattedMessages.forEach((msg, index) => {\n  const date = new Date(parseInt(msg.timestamp) * 1000).toLocaleString();\n  const shortMsg = msg.message.length > 50 ? msg.message.substring(0, 50) + '...' : msg.message;\n  markdownTable += `| ${index + 1} | ${msg.from} | ${shortMsg} | ${msg.type} | ${date} |\\n`;\n});\n\nreturn [{\n  json: {\n    totalMessages: formattedMessages.length,\n    messages: formattedMessages,\n    readableOutput: readableOutput,\n    markdownTable: markdownTable,\n    rawData: items[0]?.json || {}\n  }\n}];"
+      },
+      "id": "format-messages",
+      "name": "Format Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Set Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Config": {
+      "main": [
+        [
+          {
+            "node": "Get Last 10 Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Last 10 Messages": {
+      "main": [
+        [
+          {
+            "node": "Format Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T03:00:00.000Z",
+  "versionId": "read-whatsapp-messages-v1"
+}
+

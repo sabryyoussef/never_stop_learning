@@ -1,0 +1,129 @@
+{
+  "name": "Delete Old Gmail Messages (Simple)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "getMany",
+        "returnAll": false,
+        "limit": 10,
+        "options": {
+          "q": "before:2024/1/1"
+        }
+      },
+      "id": "get-old-messages",
+      "name": "Get Old Messages",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "delete",
+        "messageId": "={{ $json.id }}"
+      },
+      "id": "delete-message",
+      "name": "Delete Message",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 1,
+      "position": [
+        680,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "⚠️ Deletes messages permanently!"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "result",
+              "value": "=✅ Deleted {{ $input.all().length }} old messages!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "summary",
+      "name": "Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        900,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Get Old Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Old Messages": {
+      "main": [
+        [
+          {
+            "node": "Delete Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Message": {
+      "main": [
+        [
+          {
+            "node": "Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T07:05:00.000Z",
+  "versionId": "delete-old-gmail-simple-v1"
+}
+

@@ -122,26 +122,58 @@ npx playwright --version    # Version 1.56.1
 
 ---
 
-## 🎥 Video 3: 
+## 🎥 Video 3: Playwright Test Run Commands
  
 **Video Link:** https://www.youtube.com/watch?v=LTwg0kqdK4I&list=PLhW3qG5bs-L9sJKoT1LC5grGT77sfW0Z8&index=3  
-**Status:** ⬜ Not Watched  
-**Date Watched:** _____
+**Status:** ✅ Watched & Practiced  
+**Date Watched:** 2025-11-06
 
 ### Key Takeaways
-- 
-- 
-- 
+- **Basic Commands**: `npx playwright test` runs all tests across all browsers
+- **Workers Control**: `--workers 3` controls parallel execution for faster testing
+- **Specific Execution**: Can run specific files, patterns, or test titles using various flags
+- **Browser Selection**: `--project=chromium/firefox/webkit` to run on specific browsers
+- **Visual Testing**: `--headed` mode shows browser actions, `--debug` opens Playwright Inspector
+- **Reports**: `npx playwright show-report` displays detailed HTML test results
+- **Pattern Matching**: Use file patterns or `-g "test title"` for targeted test execution
+
+### Practical Commands Mastered
+```bash
+# Basic execution
+npx playwright test                                    # Run all tests
+npx playwright test --workers 3                       # Parallel execution
+npx playwright show-report                           # View HTML report
+
+# Specific test execution  
+npx playwright test tests/example.spec.js            # Specific file
+npx playwright test example                          # File pattern
+npx playwright test -g "Home page has Playwright"   # By test title
+
+# Browser-specific
+npx playwright test --project=chromium              # Single browser
+npx playwright test --project=chromium --headed     # Visual mode
+
+# Debugging
+npx playwright test --project=chromium --debug      # Debug mode
+npx playwright test --debug -g "Form submission"    # Debug specific test
+```
 
 ### Odoo-Specific Applications
-- Record "Create > Save > Confirm" flows
-- Test Sales Order creation
-- Test custom module workflows
+- Run Odoo form tests on specific browsers to catch browser-specific issues
+- Use `--headed` mode to visually verify Odoo UI interactions
+- Test Odoo workflows in parallel with multiple workers for faster CI/CD
+- Use pattern matching to run only Odoo module-specific tests
+- Debug Odoo form submissions step-by-step with Playwright Inspector
+- Generate reports for Odoo test suite results
 
 ### Action Items
-- [ ] Record first Odoo test
-- [ ] Run and verify test
-- [ ] 
+- [x] Practice all basic Playwright test run commands
+- [x] Learn specific test execution methods (file, pattern, title)
+- [x] Master browser-specific execution for cross-browser Odoo testing
+- [x] Practice debug mode with Playwright Inspector
+- [x] Create command reference guide for future use
+- [x] Set up practice environment with multiple test files
+- [ ] Apply these commands to actual Odoo test scenarios 
 
 ---
 

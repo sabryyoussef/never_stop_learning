@@ -1,0 +1,77 @@
+{
+  "name": "Simple Big Output - No Config Needed",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://jsonplaceholder.typicode.com/posts",
+        "options": {}
+      },
+      "id": "get-posts",
+      "name": "Get 100 Posts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format the data nicely\nconst posts = $input.all();\n\nlet markdownOutput = '# 📊 Big Data Output\\n\\n';\nmarkdownOutput += `**Total Posts:** ${posts.length}\\n`;\nmarkdownOutput += `**Generated:** ${new Date().toISOString()}\\n\\n`;\nmarkdownOutput += '---\\n\\n';\n\nposts.forEach((item, index) => {\n  const post = item.json;\n  markdownOutput += `## ${index + 1}. ${post.title}\\n\\n`;\n  markdownOutput += `**Post ID:** ${post.id}\\n`;\n  markdownOutput += `**User ID:** ${post.userId}\\n\\n`;\n  markdownOutput += `**Content:**\\n${post.body}\\n\\n`;\n  markdownOutput += '---\\n\\n';\n});\n\nlet tableOutput = '| # | ID | User | Title |\\n';\ntableOutput += '|---|----|----|-------|\\n';\n\nposts.forEach((post, index) => {\n  const shortTitle = post.title.length > 50 ? post.title.substring(0, 50) + '...' : post.title;\n  tableOutput += `| ${index + 1} | ${post.id} | ${post.userId} | ${shortTitle} |\\n`;\n});\n\nreturn [{\n  json: {\n    totalPosts: posts.length,\n    posts: posts,\n    markdownOutput: markdownOutput,\n    tableOutput: tableOutput,\n    summary: `✅ Retrieved ${posts.length} posts successfully!`\n  }\n}];"
+      },
+      "id": "format-output",
+      "name": "Format Big Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Get 100 Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get 100 Posts": {
+      "main": [
+        [
+          {
+            "node": "Format Big Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T07:10:00.000Z",
+  "versionId": "simple-big-output-v1"
+}
+

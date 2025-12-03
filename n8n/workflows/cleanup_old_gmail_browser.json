@@ -1,0 +1,97 @@
+{
+  "name": "Cleanup Old Gmail (Browser Automation)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "gmailAccount",
+              "value": "vendorah2@gmail.com"
+            },
+            {
+              "name": "chromeProfilePath",
+              "value": "=/home/sabry3/.config/google-chrome"
+            },
+            {
+              "name": "deleteBeforeYear",
+              "value": "2024"
+            },
+            {
+              "name": "searchQuery",
+              "value": "before:2024/1/1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-config",
+      "name": "Set Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Note: This is a conceptual workflow\n// Browser automation in n8n requires Playwright/Puppeteer\n// This shows the logic flow\n\nconst config = $input.first().json;\n\nreturn [{\n  json: {\n    message: 'Browser automation workflow concept',\n    steps: [\n      '1. Launch Chrome with existing profile',\n      '2. Navigate to Gmail',\n      '3. Login (if not already)',\n      '4. Search for old emails',\n      '5. Select and delete emails',\n      '6. Confirm deletion'\n    ],\n    config: config,\n    note: 'This requires Playwright node or custom code execution'\n  }\n}];"
+      },
+      "id": "browser-automation-concept",
+      "name": "Browser Automation Concept",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ],
+      "notes": "⚠️ Browser automation requires:\n- Playwright/Puppeteer setup\n- Chrome profile path\n- Gmail login automation\n- Email selection logic\n\nConsider using Gmail API instead (cleanup_old_gmail.json)"
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Set Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Configuration": {
+      "main": [
+        [
+          {
+            "node": "Browser Automation Concept",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T06:15:00.000Z",
+  "versionId": "cleanup-old-gmail-browser-v1"
+}
+

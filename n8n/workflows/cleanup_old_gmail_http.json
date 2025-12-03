@@ -1,0 +1,263 @@
+{
+  "name": "Cleanup Old Gmail (HTTP Request)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger-1",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "gmailAccount",
+              "value": "vendorah2@gmail.com"
+            },
+            {
+              "name": "deleteBeforeYear",
+              "value": "2024"
+            },
+            {
+              "name": "searchQuery",
+              "value": "before:2024/1/1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-config",
+      "name": "Set Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://gmail.googleapis.com/gmail/v1/users/me/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2Api",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.searchQuery }}"
+            },
+            {
+              "name": "maxResults",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "get-messages-http",
+      "name": "Get Old Messages (HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "Uses HTTP Request to call Gmail API directly. Gets message IDs first."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract message IDs from the response\nconst response = $input.first().json;\nconst messageIds = response.messages || [];\n\n// Get full message details for each ID\nconst messages = [];\n\nfor (const msg of messageIds.slice(0, 10)) { // Limit to 10\n  messages.push({\n    json: {\n      messageId: msg.id,\n      needsDetails: true\n    }\n  });\n}\n\nreturn messages;"
+      },
+      "id": "extract-ids",
+      "name": "Extract Message IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://gmail.googleapis.com/gmail/v1/users/me/messages/{{ $json.messageId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2Api",
+        "options": {}
+      },
+      "id": "get-message-details",
+      "name": "Get Message Details",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Filter messages by year\nconst message = $input.first().json;\nconst config = $('Set Configuration').first().json;\nconst targetYear = parseInt(config.deleteBeforeYear);\n\n// Extract date\nlet messageDate = null;\nif (message.internalDate) {\n  messageDate = new Date(parseInt(message.internalDate));\n} else if (message.payload && message.payload.headers) {\n  const dateHeader = message.payload.headers.find(h => h.name.toLowerCase() === 'date');\n  if (dateHeader) {\n    messageDate = new Date(dateHeader.value);\n  }\n}\n\nif (messageDate && messageDate.getFullYear() < targetYear) {\n  return [{\n    json: {\n      messageId: message.id,\n      threadId: message.threadId,\n      subject: message.payload?.headers?.find(h => h.name === 'Subject')?.value || 'No Subject',\n      from: message.payload?.headers?.find(h => h.name === 'From')?.value || 'Unknown',\n      date: messageDate.toISOString().split('T')[0],\n      year: messageDate.getFullYear(),\n      shouldDelete: true\n    }\n  }];\n}\n\nreturn [];"
+      },
+      "id": "filter-messages",
+      "name": "Filter Messages by Year",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://gmail.googleapis.com/gmail/v1/users/me/messages/{{ $json.messageId }}",
+        "method": "DELETE",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2Api",
+        "options": {}
+      },
+      "id": "delete-message-http",
+      "name": "Delete Message (HTTP)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        300
+      ],
+      "credentials": {
+        "gmailOAuth2Api": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      },
+      "notes": "⚠️ Deletes messages permanently!"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "summary",
+              "value": "=✅ Cleanup Complete!\n\n📊 Summary:\n- Messages processed: {{ $('Filter Messages by Year').all().length }}\n- Messages deleted: {{ $('Delete Message (HTTP)').all().length }}\n\n⚠️ Note: This workflow deleted messages permanently."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "create-summary",
+      "name": "Create Summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        1780,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Set Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Configuration": {
+      "main": [
+        [
+          {
+            "node": "Get Old Messages (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Old Messages (HTTP)": {
+      "main": [
+        [
+          {
+            "node": "Extract Message IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Message IDs": {
+      "main": [
+        [
+          {
+            "node": "Get Message Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Message Details": {
+      "main": [
+        [
+          {
+            "node": "Filter Messages by Year",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Messages by Year": {
+      "main": [
+        [
+          {
+            "node": "Delete Message (HTTP)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Message (HTTP)": {
+      "main": [
+        [
+          {
+            "node": "Create Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-11-10T07:00:00.000Z",
+  "versionId": "cleanup-old-gmail-http-v1"
+}
+
