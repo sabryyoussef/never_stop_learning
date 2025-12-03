@@ -161,6 +161,7 @@ This repository is for educational purposes. Individual resources and tools ment
 ---
 
 **Created by:** Sabry Youssef  
+**Contact:** +20 100 005 9085 (00201000059085)  
 **Last Updated:** 2025-12-03  
 **Current Focus:** Odoo Development & Automation Testing
 
